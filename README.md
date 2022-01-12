@@ -17,7 +17,7 @@ data-view = { version = "1", features = ["BE"] }
 ```
 
 # Examples
-```
+```rust
 use data_view::View;
 
 let mut buf: [u8; 16] = [0; 16];
