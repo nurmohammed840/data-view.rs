@@ -31,14 +31,6 @@ impl<T: AsRef<[u8]>> DataView<T> {
         &data[self.offset.min(data.len())..]
     }
 
-    /// Get next byte from the current offset.
-    #[inline(always)]
-    pub fn next(&mut self) -> Option<u8> {
-        let byte = *self.data.as_ref().get(self.offset)?;
-        self.offset += 1;
-        Some(byte)
-    }
-
     /// Reads a value of type `E` from the data view. where `E` implements `Endian`.
     /// And updates the current offset: offset + size of the value.
     ///

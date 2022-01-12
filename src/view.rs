@@ -1,3 +1,4 @@
+use core::convert::TryInto;
 use crate::endian::Endian;
 
 /// A data view for reading and writing data in a byte array.
