@@ -1,0 +1,27 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Checking...
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1
+      with:
+           toolchain: nightly
+           override: true
+           components: clippy
+           
+    - name: Run tests
+      run: cargo test --verbose
+    
+    - name: Run clippy
+      run: cargo clippy
