@@ -17,6 +17,28 @@ data-view = { version = "2", features = ["BE"] }
 ```
 
 # Examples
+
+
+### [DataView](https://docs.rs/data-view/latest/data_view/struct.DataView.html)
+
+```rust
+use data_view::DataView;
+
+let mut view = DataView::new([0; 8]);
+
+view.write::<u16>(12);
+view.write::<u16>(34);
+view.write::<u32>(5678);
+
+view.offset = 0;
+
+assert_eq!(view.read::<u16>(), 12);
+assert_eq!(view.read::<u16>(), 34);
+assert_eq!(view.read::<u32>(), 5678);
+```
+
+### [View](https://docs.rs/data-view/latest/data_view/trait.View.html)
+
 ```rust
 use data_view::View;
 

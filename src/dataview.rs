@@ -3,18 +3,6 @@ use core::convert::TryInto;
 
 /// This struct represents a data view for reading and writing data in a byte array.
 /// When read/write, This increment current offset by the size of the value.
-///
-/// # Examples
-///
-/// ```
-/// use data_view::DataView;
-///
-/// let mut view = DataView::new([0; 4]);
-///
-/// view.write::<u16>(42);
-/// view.offset = 0;
-/// assert_eq!(view.read::<u16>(), 42);
-/// ```
 #[derive(Debug, Clone)]
 pub struct DataView<T> {
     pub data: T,
