@@ -1,8 +1,7 @@
-#![doc = include_str!("../README.md")]
-
 #![no_std]
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
+#![doc = include_str!("../README.md")]
 
 mod dataview;
 mod endian;

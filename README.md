@@ -13,7 +13,7 @@ But you can override the endian by using `BE` (for big endian) or `NE` (for nati
 For example, if you want to use big endian,  
 
 ```toml
-data-view = { version = "1", features = ["BE"] }
+data-view = { version = "2", features = ["BE"] }
 ```
 
 # Examples
@@ -22,9 +22,9 @@ use data_view::View;
 
 let mut buf: [u8; 16] = [0; 16];
 
-buf.write::<u16>(0, 42);
-buf.write::<u32>(2, 123);
+buf.write_at(42_u16, 0);
+buf.write_at(123_u32, 2);
 
-assert_eq!(buf.read::<u16>(0), 42);
-assert_eq!(buf.read::<u32>(2), 123);
+assert_eq!(buf.read_at::<u16>(0), 42);
+assert_eq!(buf.read_at::<u32>(2), 123);
 ```

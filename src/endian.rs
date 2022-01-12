@@ -1,10 +1,17 @@
 pub trait Endian {
+    /// The number of bytes.
     const NBYTES: usize;
+    /// Return the memory representation of this integer as a byte array in little-endian byte order.
     fn to_bytes_le(self) -> [u8; Self::NBYTES];
+    /// Return the memory representation of this integer as a byte array in big-endian (network) byte order.
     fn to_bytes_be(self) -> [u8; Self::NBYTES];
+    /// Return the memory representation of this integer as a byte array in native byte order. As the target platform's native endianness is used, portable code should use `to_bytes_le` or `to_bytes_be`, as appropriate, instead.
     fn to_bytes_ne(self) -> [u8; Self::NBYTES];
+    /// Create a native endian integer value from its representation as a byte array in little endian.
     fn from_bytes_le(bytes: [u8; Self::NBYTES]) -> Self;
+    /// Create a native endian integer value from its representation as a byte array in big endian.
     fn from_bytes_be(bytes: [u8; Self::NBYTES]) -> Self;
+    /// Create a native endian integer value from its memory representation as a byte array in native endianness. As the target platform's native endianness is used, portable code likely wants to use `from_bytes_le` or `from_bytes_be`, as appropriate instead.
     fn from_bytes_ne(bytes: [u8; Self::NBYTES]) -> Self;
 }
 macro_rules! impl_endian_ext {
