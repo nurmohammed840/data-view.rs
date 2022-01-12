@@ -1,7 +1,7 @@
 [package]
 name = "data-view"
-version = "1.0.0"
-edition = "2021"
+version = "1.0.1"
+edition = "2018"
 
 description = "This library provides a data view for reading and writing data in a byte array."
 authors = ["Nur <nurmohammed840@gmail.com>"]
