@@ -10,6 +10,7 @@ But you can override the endianness by using `BE` (for big endian) or `NE` (for 
 For example, if you want to use big endian,  
 
 ```toml
+[dependencies]
 data-view = { version = "4", features = ["BE"] }
 ```
 
@@ -18,6 +19,7 @@ data-view = { version = "4", features = ["BE"] }
 Add this to your project's `Cargo.toml` file.
 
 ```toml
+[dependencies]
 data-view = "4"
 ```
 
@@ -55,8 +57,8 @@ assert_eq!(buf.read_at::<u32>(2).unwrap(), 123);
 
 #### Alternative
 
-There are many alternative libraries for example, 
- * [byteorder](https://github.com/BurntSushi/byteorder) or 
+There are many alternative libraries, 
+ * [byteorder](https://github.com/BurntSushi/byteorder) 
  * [bytes](https://crates.io/crates/bytes)
  
 But I didn't like API of these libraries.
