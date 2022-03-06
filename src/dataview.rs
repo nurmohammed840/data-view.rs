@@ -52,7 +52,10 @@ impl<T: AsRef<[u8]>> DataView<T> {
     }
 
     /// Reads a value of type `E: Endian` from the DataView, without doing bounds checking.
-    ///
+    /// For a safe alternative see [`read`].
+    /// 
+    /// [`read`]: #method.read
+    /// 
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
@@ -125,8 +128,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     #[inline]
     pub fn read_buf<const N: usize>(&mut self) -> Option<[u8; N]> {
-        let bytes = self.read_slice(N)?;
-        Some(bytes.try_into().unwrap())
+        Some(self.read_slice(N)?.try_into().unwrap())
     }
 
     /// Returns a reference to an element or subslice, without doing bounds checking.
@@ -139,7 +141,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
     #[inline]
     pub unsafe fn read_buf_unchecked<const N: usize>(&mut self) -> [u8; N] {
-        self.read_slice_unchecked(N).try_into().unwrap()
+        self.read_slice_unchecked(N).try_into().unwrap_unchecked()
     }
 }
 

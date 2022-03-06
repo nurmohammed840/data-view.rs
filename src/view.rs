@@ -1,6 +1,6 @@
 use crate::endian::Endian;
 
-/// A data view for reading and writing data in a byte array.
+/// A data view for reading and writing data in byte array.
 ///
 /// # Examples
 ///
@@ -12,9 +12,6 @@ use crate::endian::Endian;
 /// buf.write_at(1, 42_u16);
 /// assert_eq!(buf.read_at::<u16>(1).unwrap(), 42);
 /// ```
-///
-/// # Panics
-/// Panics if the offset is out of bounds.
 pub trait View {
     /// Reads a value of type `E: Endian` from view.
     ///
@@ -31,7 +28,10 @@ pub trait View {
     fn read_at<E: Endian>(&self, offset: usize) -> Option<E>;
 
     /// Reads a value of type `E: Endian` from view, without doing bounds checking.
-    ///
+    /// For a safe alternative see [`read_at`].
+    /// 
+    /// [`read_at`]: #method.read_at
+    /// 
     /// # Examples
     ///
     /// ```
