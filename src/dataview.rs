@@ -1,7 +1,6 @@
-#[cfg(feature = "nightly")]
-use crate::{Endian, View};
-
 use core::convert::TryInto;
+
+use crate::{Endian, View};
 
 /// This struct represents a data view for reading and writing data in a byte array.
 /// When read/write, This increment current offset by the size of the value.
@@ -45,30 +44,20 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// view.offset = 0;
     /// assert_eq!(view.read::<u16>().unwrap(), 42);
     /// ```
-    #[cfg(feature = "nightly")]
     #[inline]
-    pub fn read<E>(&mut self) -> Option<E>
-    where
-        E: Endian,
-        [(); E::SIZE]:,
-    {
+    pub fn read<E: Endian>(&mut self) -> Option<E> {
         let value = self.data.as_ref().read_at(self.offset)?;
         self.offset += E::SIZE;
         Some(value)
     }
 
     /// Reads a value of type `E: Endian` from the DataView, without doing bounds checking.
-    /// 
+    ///
     /// # Safety
-    /// 
+    ///
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
-    #[cfg(feature = "nightly")]
     #[inline]
-    pub unsafe fn read_unchecked<E>(&mut self) -> E
-    where
-        E: Endian,
-        [(); E::SIZE]:,
-    {
+    pub unsafe fn read_unchecked<E: Endian>(&mut self) -> E {
         let value = self.data.as_ref().read_at_unchecked(self.offset);
         self.offset += E::SIZE;
         value
@@ -87,8 +76,9 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     #[inline]
     pub fn read_slice(&mut self, len: usize) -> Option<&[u8]> {
-        let slice = self.data.as_ref().get(self.offset..self.offset + len)?;
-        self.offset += len;
+        let total_len = self.offset + len;
+        let slice = self.data.as_ref().get(self.offset..total_len)?;
+        self.offset = total_len;
         Some(slice)
     }
 
@@ -112,14 +102,12 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// even if the resulting reference is not used.
     #[inline]
     pub unsafe fn read_slice_unchecked(&mut self, len: usize) -> &[u8] {
-        debug_assert!(self.offset + len <= self.data.as_ref().len());
+        let data = self.data.as_ref();
+        let total_len = self.offset + len;
+        debug_assert!(total_len <= data.len());
 
-        let slice = self
-            .data
-            .as_ref()
-            .get_unchecked(self.offset..self.offset + len);
-
-        self.offset += len;
+        let slice = data.get_unchecked(self.offset..total_len);
+        self.offset = total_len;
         slice
     }
 
@@ -172,12 +160,7 @@ impl<T: AsMut<[u8]>> DataView<T> {
     /// # Panics
     /// Panics if the offset is out of bounds.
     #[inline]
-    #[cfg(feature = "nightly")]
-    pub fn write<E>(&mut self, value: E)
-    where
-        E: Endian,
-        [(); E::SIZE]:,
-    {
+    pub fn write<E: Endian>(&mut self, value: E) {
         self.data.as_mut().write_at(self.offset, value);
         self.offset += E::SIZE;
     }

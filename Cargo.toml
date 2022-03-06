@@ -1,6 +1,6 @@
 [package]
 name = "data-view"
-version = "3.0.0"
+version = "4.0.0"
 edition = "2018"
 
 description = "This library provides a data view for reading and writing data in a byte array."
@@ -10,8 +10,7 @@ license = "Apache-2.0"
 keywords = ["bytes", "endianness", "binary"]
 
 [features]
-nightly = []
-BE = ["nightly"]
-NE = ["nightly"]
+BE = []
+NE = []
 
 [dependencies]
