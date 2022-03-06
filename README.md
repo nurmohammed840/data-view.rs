@@ -24,7 +24,7 @@ data-view = { version = "2", features = ["BE"] }
 ```rust
 use data_view::DataView;
 
-let mut view = DataView::new([0; 8]);
+let mut view = DataView::from([0; 8]);
 
 view.write::<u16>(12);
 view.write::<u16>(34);

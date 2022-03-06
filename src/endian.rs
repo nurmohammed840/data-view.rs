@@ -1,35 +1,35 @@
 pub trait Endian {
     /// The number of bytes.
-    const NBYTES: usize;
+    const SIZE: usize;
     /// Return the memory representation of this integer as a byte array in little-endian byte order.
-    fn to_bytes_le(self) -> [u8; Self::NBYTES];
+    fn to_bytes_le(self) -> [u8; Self::SIZE];
     /// Return the memory representation of this integer as a byte array in big-endian (network) byte order.
-    fn to_bytes_be(self) -> [u8; Self::NBYTES];
+    fn to_bytes_be(self) -> [u8; Self::SIZE];
     /// Return the memory representation of this integer as a byte array in native byte order. As the target platform's native endianness is used, portable code should use `to_bytes_le` or `to_bytes_be`, as appropriate, instead.
-    fn to_bytes_ne(self) -> [u8; Self::NBYTES];
+    fn to_bytes_ne(self) -> [u8; Self::SIZE];
     /// Create a native endian integer value from its representation as a byte array in little endian.
-    fn from_bytes_le(bytes: [u8; Self::NBYTES]) -> Self;
+    fn from_bytes_le(bytes: [u8; Self::SIZE]) -> Self;
     /// Create a native endian integer value from its representation as a byte array in big endian.
-    fn from_bytes_be(bytes: [u8; Self::NBYTES]) -> Self;
+    fn from_bytes_be(bytes: [u8; Self::SIZE]) -> Self;
     /// Create a native endian integer value from its memory representation as a byte array in native endianness. As the target platform's native endianness is used, portable code likely wants to use `from_bytes_le` or `from_bytes_be`, as appropriate instead.
-    fn from_bytes_ne(bytes: [u8; Self::NBYTES]) -> Self;
+    fn from_bytes_ne(bytes: [u8; Self::SIZE]) -> Self;
 }
 macro_rules! impl_endian_ext {
     [$($rty:ty : $nbyte:literal)*] => ($(
         impl Endian for $rty {
-            const NBYTES: usize = $nbyte;
+            const SIZE: usize = $nbyte;
             #[inline(always)]
-            fn to_bytes_le(self) -> [u8; Self::NBYTES] { self.to_le_bytes() }
+            fn to_bytes_le(self) -> [u8; Self::SIZE] { self.to_le_bytes() }
             #[inline(always)]
-            fn to_bytes_be(self) -> [u8; Self::NBYTES] { self.to_be_bytes() }
+            fn to_bytes_be(self) -> [u8; Self::SIZE] { self.to_be_bytes() }
             #[inline(always)]
-            fn to_bytes_ne(self) -> [u8; Self::NBYTES] { self.to_ne_bytes() }
+            fn to_bytes_ne(self) -> [u8; Self::SIZE] { self.to_ne_bytes() }
             #[inline(always)]
-            fn from_bytes_le(bytes: [u8; Self::NBYTES]) -> Self { Self::from_le_bytes(bytes) }
+            fn from_bytes_le(bytes: [u8; Self::SIZE]) -> Self { Self::from_le_bytes(bytes) }
             #[inline(always)]
-            fn from_bytes_be(bytes: [u8; Self::NBYTES]) -> Self { Self::from_be_bytes(bytes) }
+            fn from_bytes_be(bytes: [u8; Self::SIZE]) -> Self { Self::from_be_bytes(bytes) }
             #[inline(always)]
-            fn from_bytes_ne(bytes: [u8; Self::NBYTES]) -> Self { Self::from_ne_bytes(bytes) }
+            fn from_bytes_ne(bytes: [u8; Self::SIZE]) -> Self { Self::from_ne_bytes(bytes) }
         }
     )*);
 }

@@ -21,7 +21,7 @@ jobs:
            components: clippy
            
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --features="nightly"
     
     - name: Run clippy
       run: cargo clippy

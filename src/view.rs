@@ -35,7 +35,7 @@ pub trait View {
     fn read_at<E>(&self, offset: usize) -> E
     where
         E: Endian,
-        [(); E::NBYTES]:;
+        [(); E::SIZE]:;
 
     /// Writes a value of type `E` to the data view. where `E` is a type that implements `Endian`.
     ///
@@ -56,35 +56,35 @@ pub trait View {
     fn write_at<E>(&mut self, value: E, offset: usize)
     where
         E: Endian,
-        [u8; E::NBYTES]:;
+        [u8; E::SIZE]:;
 }
 
 impl View for [u8] {
-    #[inline(always)]
+    #[inline]
     fn read_at<E>(&self, offset: usize) -> E
     where
         E: Endian,
-        [u8; E::NBYTES]:,
+        [u8; E::SIZE]:,
     {
         #[cfg(not(any(feature = "BE", feature = "NE")))]
-        return E::from_bytes_le(self[offset..offset + E::NBYTES].try_into().unwrap());
+        return E::from_bytes_le(self[offset..offset + E::SIZE].try_into().unwrap());
         #[cfg(feature = "BE")]
-        return E::from_bytes_be(self[offset..offset + E::NBYTES].try_into().unwrap());
+        return E::from_bytes_be(self[offset..offset + E::SIZE].try_into().unwrap());
         #[cfg(feature = "NE")]
-        return E::from_bytes_ne(self[offset..offset + E::NBYTES].try_into().unwrap());
+        return E::from_bytes_ne(self[offset..offset + E::SIZE].try_into().unwrap());
     }
 
-    #[inline(always)]
-    fn write_at<E>(&mut self, value: E, offset: usize)
+    #[inline]
+    fn write_at<E>(&mut self, offset: usize, value: E)
     where
         E: Endian,
-        [(); E::NBYTES]:,
+        [(); E::SIZE]:,
     {
         #[cfg(not(any(feature = "BE", feature = "NE")))]
-        self[offset..offset + E::NBYTES].copy_from_slice(&value.to_bytes_le());
+        self[offset..offset + E::SIZE].copy_from_slice(&value.to_bytes_le());
         #[cfg(feature = "BE")]
-        self[offset..offset + E::NBYTES].copy_from_slice(&value.to_bytes_be());
+        self[offset..offset + E::SIZE].copy_from_slice(&value.to_bytes_be());
         #[cfg(feature = "NE")]
-        self[offset..offset + E::NBYTES].copy_from_slice(&value.to_bytes_ne());
+        self[offset..offset + E::SIZE].copy_from_slice(&value.to_bytes_ne());
     }
 }
