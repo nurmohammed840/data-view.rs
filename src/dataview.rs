@@ -32,7 +32,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
         &data[self.offset.min(data.len())..]
     }
 
-    /// Reads a value of type `E` from the data view. where `E` implements `Endian`.
+    /// Reads a value of type `E: Endian` from the DataView.
     ///
     /// # Examples
     ///
@@ -45,16 +45,31 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// view.offset = 0;
     /// assert_eq!(view.read::<u16>(), 42);
     /// ```
-    /// # Panics
-    /// Panics if the offset is out of bounds.
     #[cfg(feature = "nightly")]
     #[inline]
-    pub fn read<E>(&mut self) -> E
+    pub fn read<E>(&mut self) -> Option<E>
     where
         E: Endian,
         [(); E::SIZE]:,
     {
-        let value = self.data.as_ref().read_at(self.offset);
+        let value = self.data.as_ref().read_at(self.offset)?;
+        self.offset += E::SIZE;
+        Some(value)
+    }
+
+    /// Reads a value of type `E: Endian` from the DataView, without doing bounds checking.
+    /// 
+    /// # Safety
+    /// 
+    /// Calling this method with an out-of-bounds index is *[undefined behavior]*
+    #[cfg(feature = "nightly")]
+    #[inline]
+    pub unsafe fn read_unchecked<E>(&mut self) -> E
+    where
+        E: Endian,
+        [(); E::SIZE]:,
+    {
+        let value = self.data.as_ref().read_at_unchecked(self.offset);
         self.offset += E::SIZE;
         value
     }

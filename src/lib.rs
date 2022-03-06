@@ -1,4 +1,4 @@
-// #![no_std]
+#![no_std]
 
 #![cfg_attr(feature = "nightly", allow(incomplete_features))]
 #![cfg_attr(feature = "nightly", feature(generic_const_exprs))]
