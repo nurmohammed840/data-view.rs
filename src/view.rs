@@ -10,8 +10,8 @@ use core::convert::TryInto;
 ///
 /// let mut buf = [0; 16];
 ///
-/// buf.write_at(42_u16, 1);
-/// assert_eq!(buf.read_at::<u16>(1), 42);
+/// buf.write_at(1, 42_u16);
+/// assert_eq!(buf.read_at::<u16>(1).unwrap(), 42);
 /// ```
 ///
 /// # Panics
@@ -26,8 +26,8 @@ pub trait View {
     ///
     /// let mut buf: [u8; 2] = [12, 34];
     ///
-    /// assert_eq!(buf.read_at::<u8>(0), 12);
-    /// assert_eq!(buf.read_at::<u8>(1), 34);
+    /// assert_eq!(buf.read_at::<u8>(0).unwrap(), 12);
+    /// assert_eq!(buf.read_at::<u8>(1).unwrap(), 34);
     /// ```
     ///
     /// # Panics
@@ -38,6 +38,18 @@ pub trait View {
         [(); E::SIZE]:;
 
     /// Reads a value of type `E: Endian` from view, without doing bounds checking.
+    /// 
+    /// # Examples
+    ///
+    /// ```
+    /// use data_view::View;
+    ///
+    /// let mut buf: [u8; 2] = [12, 34];
+    /// unsafe {
+    ///     assert_eq!(buf.read_at_unchecked::<u8>(0), 12);
+    ///     assert_eq!(buf.read_at_unchecked::<u8>(1), 34);
+    /// }
+    /// ```
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
@@ -55,8 +67,8 @@ pub trait View {
     ///
     /// let mut buf: [u8; 2] = [0; 2];
     ///
-    /// buf.write_at(12_u8, 0);
-    /// buf.write_at(34_u8, 1);
+    /// buf.write_at(0, 12_u8);
+    /// buf.write_at(1, 34_u8);
     /// assert_eq!(buf, [12, 34]);
     /// ```
     ///

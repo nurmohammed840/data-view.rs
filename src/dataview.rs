@@ -43,7 +43,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     ///
     /// view.write::<u16>(42);
     /// view.offset = 0;
-    /// assert_eq!(view.read::<u16>(), 42);
+    /// assert_eq!(view.read::<u16>().unwrap(), 42);
     /// ```
     #[cfg(feature = "nightly")]
     #[inline]

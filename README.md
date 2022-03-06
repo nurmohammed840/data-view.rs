@@ -18,6 +18,11 @@ data-view = { version = "2", features = ["BE"] }
 
 # Examples
 
+Add this to your project's `Cargo.toml` file.
+
+```toml
+data-view = { version = "2", features = ["nightly"] }
+```
 
 ### [DataView](https://docs.rs/data-view/latest/data_view/struct.DataView.html)
 
@@ -32,9 +37,9 @@ view.write::<u32>(5678);
 
 view.offset = 0;
 
-assert_eq!(view.read::<u16>(), 12);
-assert_eq!(view.read::<u16>(), 34);
-assert_eq!(view.read::<u32>(), 5678);
+assert_eq!(view.read::<u16>().unwrap(), 12);
+assert_eq!(view.read::<u16>().unwrap(), 34);
+assert_eq!(view.read::<u32>().unwrap(), 5678);
 ```
 
 ### [View](https://docs.rs/data-view/latest/data_view/trait.View.html)
@@ -44,9 +49,9 @@ use data_view::View;
 
 let mut buf: [u8; 16] = [0; 16];
 
-buf.write_at(42_u16, 0);
-buf.write_at(123_u32, 2);
+buf.write_at(0, 42_u16);
+buf.write_at(2, 123_u32);
 
-assert_eq!(buf.read_at::<u16>(0), 42);
-assert_eq!(buf.read_at::<u32>(2), 123);
+assert_eq!(buf.read_at::<u16>(0).unwrap(), 42);
+assert_eq!(buf.read_at::<u32>(2).unwrap(), 123);
 ```
