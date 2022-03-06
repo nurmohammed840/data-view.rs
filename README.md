@@ -13,7 +13,7 @@ But you can override the endian by using `BE` (for big endian) or `NE` (for nati
 For example, if you want to use big endian,  
 
 ```toml
-data-view = { version = "2", features = ["BE"] }
+data-view = { version = "3", features = ["BE"] }
 ```
 
 # Examples
@@ -21,7 +21,7 @@ data-view = { version = "2", features = ["BE"] }
 Add this to your project's `Cargo.toml` file.
 
 ```toml
-data-view = { version = "2", features = ["nightly"] }
+data-view = { version = "3", features = ["nightly"] }
 ```
 
 ### [DataView](https://docs.rs/data-view/latest/data_view/struct.DataView.html)
