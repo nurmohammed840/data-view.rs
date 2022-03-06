@@ -1,5 +1,4 @@
 use crate::endian::Endian;
-use core::convert::TryInto;
 
 /// A data view for reading and writing data in a byte array.
 ///
@@ -29,16 +28,10 @@ pub trait View {
     /// assert_eq!(buf.read_at::<u8>(0).unwrap(), 12);
     /// assert_eq!(buf.read_at::<u8>(1).unwrap(), 34);
     /// ```
-    ///
-    /// # Panics
-    /// Panics if the offset is out of bounds.
-    fn read_at<E>(&self, offset: usize) -> Option<E>
-    where
-        E: Endian,
-        [(); E::SIZE]:;
+    fn read_at<E: Endian>(&self, offset: usize) -> Option<E>;
 
     /// Reads a value of type `E: Endian` from view, without doing bounds checking.
-    /// 
+    ///
     /// # Examples
     ///
     /// ```
@@ -53,12 +46,9 @@ pub trait View {
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
-    unsafe fn read_at_unchecked<E>(&self, offset: usize) -> E
-    where
-        E: Endian,
-        [(); E::SIZE]:;
+    unsafe fn read_at_unchecked<E: Endian>(&self, offset: usize) -> E;
 
-    /// Writes a value of type `E` to the data view. where `E` is a type that implements `Endian`.
+    /// Writes a value of type `E: Endian` to data view.
     ///
     /// # Examples
     ///
@@ -74,69 +64,41 @@ pub trait View {
     ///
     /// # Panics
     /// Panics if the offset is out of bounds.
-    fn write_at<E>(&mut self, offset: usize, value: E)
-    where
-        E: Endian,
-        [u8; E::SIZE]:;
+    fn write_at<E: Endian>(&mut self, offset: usize, value: E);
 }
 
 impl View for [u8] {
     #[inline]
-    fn read_at<E>(&self, offset: usize) -> Option<E>
-    where
-        E: Endian,
-        [u8; E::SIZE]:,
-    {
-        #[cfg(not(any(feature = "BE", feature = "NE")))]
-        return Some(E::from_bytes_le(
-            self.get(offset..offset + E::SIZE)?.try_into().unwrap(),
-        ));
-        #[cfg(feature = "BE")]
-        return Some(E::from_bytes_be(
-            self.get(offset..offset + E::SIZE)?.try_into().unwrap(),
-        ));
-        #[cfg(feature = "NE")]
-        return Some(E::from_bytes_ne(
-            self.get(offset..offset + E::SIZE)?.try_into().unwrap(),
-        ));
+    fn read_at<E: Endian>(&self, offset: usize) -> Option<E> {
+        let bytes = self.get(offset..offset + E::SIZE)?;
+        unsafe {
+            #[cfg(not(any(feature = "BE", feature = "NE")))]
+            return Some(E::from_bytes_le(bytes));
+            #[cfg(feature = "BE")]
+            return Some(E::from_bytes_be(bytes));
+            #[cfg(feature = "NE")]
+            return Some(E::from_bytes_ne(bytes));
+        }
     }
-
     #[inline]
-    fn write_at<E>(&mut self, offset: usize, value: E)
-    where
-        E: Endian,
-        [(); E::SIZE]:,
-    {
+    unsafe fn read_at_unchecked<E: Endian>(&self, offset: usize) -> E {
+        debug_assert!(offset + E::SIZE <= self.len());
+        let bytes = self.get_unchecked(offset..offset + E::SIZE);
         #[cfg(not(any(feature = "BE", feature = "NE")))]
-        self[offset..offset + E::SIZE].copy_from_slice(&value.to_bytes_le());
+        return E::from_bytes_le(bytes);
         #[cfg(feature = "BE")]
-        self[offset..offset + E::SIZE].copy_from_slice(&value.to_bytes_be());
+        return E::from_bytes_be(bytes);
         #[cfg(feature = "NE")]
-        self[offset..offset + E::SIZE].copy_from_slice(&value.to_bytes_ne());
+        return E::from_bytes_ne(bytes);
     }
-
-    unsafe fn read_at_unchecked<E>(&self, offset: usize) -> E
-    where
-        E: Endian,
-        [(); E::SIZE]:,
-    {
+    #[inline]
+    fn write_at<E: Endian>(&mut self, offset: usize, value: E) {
+        assert!(offset + E::SIZE <= self.len());
         #[cfg(not(any(feature = "BE", feature = "NE")))]
-        return E::from_bytes_le(
-            self.get_unchecked(offset..offset + E::SIZE)
-                .try_into()
-                .unwrap(),
-        );
+        unsafe { E::bytes_cpy_le(value, self.as_mut_ptr().add(offset)) };
         #[cfg(feature = "BE")]
-        return E::from_bytes_be(
-            self.get_unchecked(offset..offset + E::SIZE)
-                .try_into()
-                .unwrap(),
-        );
+        unsafe { E::bytes_cpy_be(value, self.as_mut_ptr().add(offset)) };
         #[cfg(feature = "NE")]
-        return E::from_bytes_ne(
-            self.get_unchecked(offset..offset + E::SIZE)
-                .try_into()
-                .unwrap(),
-        );
+        unsafe { E::bytes_cpy_ne(value, self.as_mut_ptr().add(offset)) };
     }
 }
