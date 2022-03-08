@@ -57,9 +57,9 @@ assert_eq!(buf.read_at::<u32>(2).unwrap(), 123);
 
 #### Alternative
 
-There are many alternative libraries, 
- * [byteorder](https://github.com/BurntSushi/byteorder) 
+There are many alternative libraries,
  * [bytes](https://crates.io/crates/bytes)
+ * [byteorder](https://github.com/BurntSushi/byteorder) 
  
 But I didn't like API of these libraries.
 The have a lot of functions for reading and writing data. For example, `read_u16`, `read_u32`, `write_i64`,  And so on... 

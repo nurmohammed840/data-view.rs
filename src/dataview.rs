@@ -1,6 +1,6 @@
 use core::convert::TryInto;
 
-use crate::{Endian, View};
+use crate::endian::*;
 
 /// This struct represents a data view for reading and writing data in a byte array.
 /// When read/write, This increment current offset by the size of the value.
@@ -46,9 +46,8 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     #[inline]
     pub fn read<E: Endian>(&mut self) -> Option<E> {
-        let value = self.data.as_ref().read_at(self.offset)?;
-        self.offset += E::SIZE;
-        Some(value)
+        self.read_slice(E::SIZE)
+            .map(|bytes| unsafe { num_from(bytes) })
     }
 
     /// Reads a value of type `E: Endian` from the DataView, without doing bounds checking.
@@ -61,9 +60,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
     #[inline]
     pub unsafe fn read_unchecked<E: Endian>(&mut self) -> E {
-        let value = self.data.as_ref().read_at_unchecked(self.offset);
-        self.offset += E::SIZE;
-        value
+        num_from(self.read_slice_unchecked(E::SIZE))
     }
 
     /// Read slice from the current offset.
@@ -128,7 +125,8 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     #[inline]
     pub fn read_buf<const N: usize>(&mut self) -> Option<[u8; N]> {
-        unsafe { Some(self.read_slice(N)?.try_into().unwrap_unchecked()) }
+        self.read_slice(N)
+            .map(|bytes| unsafe { bytes.try_into().unwrap_unchecked() })
     }
 
     /// Returns a reference to an element or subslice, without doing bounds checking.
@@ -162,9 +160,12 @@ impl<T: AsMut<[u8]>> DataView<T> {
     /// # Panics
     /// Panics if the offset is out of bounds.
     #[inline]
-    pub fn write<E: Endian>(&mut self, value: E) {
-        self.data.as_mut().write_at(self.offset, value);
-        self.offset += E::SIZE;
+    pub fn write<E: Endian>(&mut self, num: E) {
+        let dst = self.data.as_mut();
+        let total_len = self.offset + E::SIZE;
+        assert!(total_len <= dst.len());
+        unsafe { num_write_at(num, dst.as_mut_ptr().add(self.offset)) };
+        self.offset = total_len;
     }
 
     /// Writes a slice into the data view.
