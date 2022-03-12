@@ -10,6 +10,19 @@ pub struct DataView<T> {
     pub offset: usize,
 }
 
+impl<T> DataView<T> {
+    /// # Examples
+    ///
+    /// ```
+    /// use data_view::DataView;
+    ///
+    /// let view = DataView::new([0; 16]);
+    /// ```
+    pub const fn new(data: T) -> Self {
+        Self { data, offset: 0 }
+    }
+}
+
 impl<T: AsRef<[u8]>> DataView<T> {
     /// Returns remaining slice from the current offset.
     /// It doesn't change the offset.
@@ -28,7 +41,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     #[inline]
     pub fn remaining_slice(&self) -> &[u8] {
         let data = self.data.as_ref();
-        &data[self.offset.min(data.len())..]
+        unsafe { data.get_unchecked(self.offset.min(data.len())..) }
     }
 
     /// Reads a value of type `E: Endian` from the DataView.
@@ -47,7 +60,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     #[inline]
     pub fn read<E: Endian>(&mut self) -> Option<E> {
         self.read_slice(E::SIZE)
-            .map(|bytes| unsafe { num_from(bytes) })
+            .map(|bytes| unsafe { num_from(bytes.as_ptr()) })
     }
 
     /// Reads a value of type `E: Endian` from the DataView, without doing bounds checking.
@@ -60,7 +73,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
     #[inline]
     pub unsafe fn read_unchecked<E: Endian>(&mut self) -> E {
-        num_from(self.read_slice_unchecked(E::SIZE))
+        num_from(self.read_slice_unchecked(E::SIZE).as_ptr())
     }
 
     /// Read slice from the current offset.
@@ -197,18 +210,8 @@ impl<T: AsMut<[u8]>> DataView<T> {
 }
 
 impl<T> From<T> for DataView<T> {
-    /// Creates a new `View` from a byte array.
-    /// The offset is set to 0.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use data_view::DataView;
-    ///
-    /// let view = DataView::from([0; 16]);
-    /// ```
     #[inline]
     fn from(data: T) -> Self {
-        Self { data, offset: 0 }
+        Self::new(data)
     }
 }

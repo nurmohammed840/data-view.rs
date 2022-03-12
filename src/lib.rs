@@ -1,10 +1,10 @@
-#![no_std]
+// #![no_std]
 #![doc = include_str!("../README.md")]
 
-mod view;
-mod endian;
 mod dataview;
+mod endian;
+mod view;
 
-pub use view::View;
-pub use endian::Endian;
 pub use dataview::DataView;
+pub use endian::Endian;
+pub use view::View;
