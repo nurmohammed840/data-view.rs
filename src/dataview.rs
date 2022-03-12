@@ -173,16 +173,3 @@ impl<T> From<T> for DataView<T> {
         Self::new(data)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_name() {
-        let mut view = DataView::new([1, 2, 3]);
-
-        assert_eq!(view.read_buf(), Some([1, 2]));
-        assert_eq!(view.read_buf::<3>(), None);
-    }
-}
