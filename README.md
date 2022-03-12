@@ -11,7 +11,7 @@ For example, if you want to use big endian,
 
 ```toml
 [dependencies]
-data-view = { version = "4", features = ["BE"] }
+data-view = { version = "5", features = ["BE"] }
 ```
 
 # Examples
@@ -20,7 +20,7 @@ Add this to your project's `Cargo.toml` file.
 
 ```toml
 [dependencies]
-data-view = "4"
+data-view = "5"
 ```
 
 ### [DataView](https://docs.rs/data-view/latest/data_view/struct.DataView.html)
@@ -28,17 +28,17 @@ data-view = "4"
 ```rust
 use data_view::DataView;
 
-let mut view = DataView::from([0; 8]);
+let mut view = DataView::new([0; 8]);
 
-view.write::<u16>(12);
-view.write::<u16>(34);
-view.write::<u32>(5678);
+view.write(12_u16);
+view.write(34_u16);
+view.write(5678_u32);
 
 view.offset = 0;
 
-assert_eq!(view.read::<u16>().unwrap(), 12);
-assert_eq!(view.read::<u16>().unwrap(), 34);
-assert_eq!(view.read::<u32>().unwrap(), 5678);
+assert_eq!(view.read::<u16>(), Some(12));
+assert_eq!(view.read::<u16>(), Some(34));
+assert_eq!(view.read::<u32>(), Some(5678));
 ```
 
 ### [View](https://docs.rs/data-view/latest/data_view/trait.View.html)
@@ -46,13 +46,13 @@ assert_eq!(view.read::<u32>().unwrap(), 5678);
 ```rust
 use data_view::View;
 
-let mut buf: [u8; 16] = [0; 16];
+let mut buf = [0; 8];
 
 buf.write_at(0, 42_u16);
 buf.write_at(2, 123_u32);
 
-assert_eq!(buf.read_at::<u16>(0).unwrap(), 42);
-assert_eq!(buf.read_at::<u32>(2).unwrap(), 123);
+assert_eq!(buf.read_at::<u16>(0), Some(42));
+assert_eq!(buf.read_at::<u32>(2), Some(123));
 ```
 
 #### Alternative

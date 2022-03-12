@@ -19,5 +19,11 @@ jobs:
     - name: Run clippy
       run: cargo clippy
 
-    - name: Run tests
+    - name: Run tests (LE)
       run: cargo test
+   
+    - name: Run tests (NE)
+      run: cargo test --features="NE"
+
+    - name: Run tests (BE)
+      run: cargo test --features="BE"

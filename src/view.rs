@@ -1,6 +1,4 @@
-use core::mem::size_of;
-
-use crate::endian::*;
+use super::*;
 
 /// A data view for reading and writing data in byte array.
 ///
@@ -41,9 +39,6 @@ pub trait View {
     /// assert_eq!(buf.write_at(0, 42_u8), Ok(()));
     /// assert_eq!(buf.write_at(1, 123_u16), Err(()));
     /// ```
-    ///
-    /// # Panics
-    /// Panics if the offset is out of bounds.
     fn write_at<E: Endian>(&mut self, offset: usize, num: E) -> Result<(), ()>;
 }
 
@@ -61,6 +56,7 @@ impl View for [u8] {
         if offset + size_of::<E>() > self.len() {
             return Err(());
         }
-        Ok(unsafe { num_write_at(num, self.as_mut_ptr().add(offset)) })
+        unsafe { num_write_at(num, self.as_mut_ptr().add(offset)) };
+        Ok(())
     }
 }

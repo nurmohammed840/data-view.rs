@@ -1,6 +1,4 @@
-use core::convert::TryInto;
-
-use crate::endian::*;
+use super::*;
 
 /// This struct represents a data view for reading and writing data in a byte array.
 /// When read/write, This increment current offset by the size of the value.
@@ -32,7 +30,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     /// use data_view::DataView;
     ///
-    /// let mut view = [1, 2].into();
+    /// let mut view = DataView::new([1, 2]);
     ///
     /// assert_eq!(view.remaining_slice(), &[1, 2]);
     /// view.offset = 42;
@@ -51,31 +49,23 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     /// use data_view::DataView;
     ///
-    /// let mut view = DataView::from([0; 4]);
+    /// let mut view = DataView::new([0; 4]);
     ///
     /// view.write::<u16>(42);
     /// view.offset = 0;
-    /// assert_eq!(view.read::<u16>().unwrap(), 42);
+    /// assert_eq!(view.read::<u16>(), Some(42));
+    /// assert_eq!(view.read::<u32>(), None);
     /// ```
     #[inline]
     pub fn read<E: Endian>(&mut self) -> Option<E> {
-        todo!()
-        // self.read_slice(E::SIZE)
-        //     .map(|bytes| unsafe { num_from(bytes.as_ptr()) })
-    }
-
-    /// Reads a value of type `E: Endian` from the DataView, without doing bounds checking.
-    /// For a safe alternative see [`read`].
-    ///
-    /// [`read`]: #method.read
-    ///
-    /// # Safety
-    ///
-    /// Calling this method with an out-of-bounds index is *[undefined behavior]*
-    #[inline]
-    pub unsafe fn read_unchecked<E: Endian>(&mut self) -> E {
-        todo!()
-        // num_from(self.read_slice_unchecked(E::SIZE).as_ptr())
+        let data = self.data.as_ref();
+        let total_len = self.offset + size_of::<E>();
+        if total_len > data.len() {
+            return None;
+        }
+        let num = unsafe { num_from(data.as_ptr().add(self.offset)) };
+        self.offset = total_len;
+        Some(num)
     }
 
     /// Read slice from the current offset.
@@ -84,10 +74,10 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     /// use data_view::DataView;
     ///
-    /// let mut view = DataView::from([1, 2, 3, 4]);
+    /// let mut view = DataView::new([1, 2, 3]);
     ///
-    /// assert_eq!(view.read_slice(2).unwrap(), &[1, 2]);
-    /// assert_eq!(view.read_slice(2).unwrap(), &[3, 4]);
+    /// assert_eq!(view.read_slice(2), Some([1, 2].as_ref()));
+    /// assert_eq!(view.read_slice(3), None);
     /// ```
     #[inline]
     pub fn read_slice(&mut self, len: usize) -> Option<&[u8]> {
@@ -97,35 +87,6 @@ impl<T: AsRef<[u8]>> DataView<T> {
         Some(slice)
     }
 
-    /// Read slice from the current offset, without doing bounds checking.
-    /// For a safe alternative see [`read_slice`].
-    ///
-    /// [`read_slice`]: #method.read_slice
-    ///
-    /// # Example
-    /// ```
-    /// use data_view::DataView;
-    /// let mut view = DataView::from([1, 2, 3, 4]);
-    /// unsafe {
-    ///     assert_eq!(view.read_slice_unchecked(2), &[1, 2]);
-    ///     assert_eq!(view.read_slice_unchecked(2), &[3, 4]);
-    /// }
-    /// ```
-    /// # Safety
-    ///
-    /// Calling this method with an out-of-bounds index is *[undefined behavior]*
-    /// even if the resulting reference is not used.
-    #[inline]
-    pub unsafe fn read_slice_unchecked(&mut self, len: usize) -> &[u8] {
-        let data = self.data.as_ref();
-        let total_len = self.offset + len;
-        debug_assert!(total_len <= data.len());
-
-        let slice = data.get_unchecked(self.offset..total_len);
-        self.offset = total_len;
-        slice
-    }
-
     /// Create a buffer and returns it, from the current offset.
     ///
     /// # Examples
@@ -133,28 +94,21 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     /// use data_view::DataView;
     ///
-    /// let mut view = DataView::from([1, 2, 3, 4]);
+    /// let mut view = DataView::new([1, 2, 3]);
     ///
-    /// assert_eq!(view.read_buf::<2>().unwrap(), [1, 2]);
-    /// assert_eq!(view.read_buf::<2>().unwrap(), [3, 4]);
+    /// assert_eq!(view.read_buf(), Some([1, 2]));
+    /// assert_eq!(view.read_buf::<3>(), None);
     /// ```
     #[inline]
     pub fn read_buf<const N: usize>(&mut self) -> Option<[u8; N]> {
-        self.read_slice(N)
-            .map(|bytes| unsafe { bytes.try_into().unwrap_unchecked() })
-    }
-
-    /// Returns a reference to an element or subslice, without doing bounds checking.
-    /// For a safe alternative see [`read_buf`].
-    ///
-    /// [`read_buf`]: #method.read_buf
-    ///
-    /// # Safety
-    ///
-    /// Calling this method with an out-of-bounds index is *[undefined behavior]*
-    #[inline]
-    pub unsafe fn read_buf_unchecked<const N: usize>(&mut self) -> [u8; N] {
-        self.read_slice_unchecked(N).try_into().unwrap_unchecked()
+        let data = self.data.as_ref();
+        let total_len = self.offset + N;
+        if total_len > data.len() {
+            return None;
+        }
+        let buf = unsafe { ptr::read(data.as_ptr().add(self.offset) as *const [u8; N]) };
+        self.offset = total_len;
+        Some(buf)
     }
 }
 
@@ -166,22 +120,21 @@ impl<T: AsMut<[u8]>> DataView<T> {
     /// ```
     /// use data_view::DataView;
     ///
-    /// let mut view = DataView::from([0; 2]);
+    /// let mut view = DataView::new([0; 3]);
     ///
-    /// view.write::<u8>(12);
-    /// view.write::<u8>(34);
-    /// assert_eq!(view.data, [12, 34]);
+    /// assert_eq!(view.write(42_u16), Ok(()));
+    /// assert_eq!(view.write(123_u32), Err(()));
     /// ```
-    /// # Panics
-    /// Panics if the offset is out of bounds.
     #[inline]
-    pub fn write<E: Endian>(&mut self, num: E) {
-        todo!()
-        // let dst = self.data.as_mut();
-        // let total_len = self.offset + E::SIZE;
-        // assert!(total_len <= dst.len());
-        // unsafe { num_write_at(num, dst.as_mut_ptr().add(self.offset)) };
-        // self.offset = total_len;
+    pub fn write<E: Endian>(&mut self, num: E) -> Result<(), ()> {
+        let data = self.data.as_mut();
+        let total_len = self.offset + size_of::<E>();
+        if total_len > data.len() {
+            return Err(());
+        }
+        unsafe { num_write_at(num, data.as_mut_ptr().add(self.offset)) };
+        self.offset = total_len;
+        Ok(())
     }
 
     /// Writes a slice into the data view.
@@ -191,24 +144,26 @@ impl<T: AsMut<[u8]>> DataView<T> {
     /// ```
     /// use data_view::DataView;
     ///
-    /// let mut view = DataView::from([0; 4]);
-    /// view.write_slice([1, 2]);
-    /// view.write_slice([3, 4]);
-    /// assert_eq!(view.data, [1, 2, 3, 4]);
+    /// let mut view = DataView::new([0; 3]);
+    ///
+    /// assert_eq!(view.write_slice([4, 2]), Ok(()));
+    /// assert_eq!(view.write_slice([1, 2, 3]), Err(()));
+    /// assert_eq!(view.data, [4, 2, 0]);
     /// ```
-    /// # Panics
-    /// Panics if the offset is out of bounds.
     #[inline]
-    pub fn write_slice(&mut self, slice: impl AsRef<[u8]>) {
+    pub fn write_slice(&mut self, slice: impl AsRef<[u8]>) -> Result<(), ()> {
         let src = slice.as_ref();
-        let dst = self.data.as_mut();
+        let data = self.data.as_mut();
         let count = src.len();
         let total_len = self.offset + count;
-        assert!(total_len <= dst.len());
+        if total_len > data.len() {
+            return Err(());
+        }
         unsafe {
-            core::ptr::copy_nonoverlapping(src.as_ptr(), dst.as_mut_ptr().add(self.offset), count);
+            ptr::copy_nonoverlapping(src.as_ptr(), data.as_mut_ptr().add(self.offset), count);
         }
         self.offset = total_len;
+        Ok(())
     }
 }
 
@@ -216,5 +171,18 @@ impl<T> From<T> for DataView<T> {
     #[inline]
     fn from(data: T) -> Self {
         Self::new(data)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_name() {
+        let mut view = DataView::new([1, 2, 3]);
+
+        assert_eq!(view.read_buf(), Some([1, 2]));
+        assert_eq!(view.read_buf::<3>(), None);
     }
 }
