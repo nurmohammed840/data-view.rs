@@ -32,10 +32,10 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     /// use data_view::DataView;
     ///
-    /// let mut view = DataView::from([1, 2, 3]);
+    /// let mut view = [1, 2].into();
     ///
-    /// assert_eq!(view.remaining_slice(), &[1, 2, 3]);
-    /// view.offset = 3;
+    /// assert_eq!(view.remaining_slice(), &[1, 2]);
+    /// view.offset = 42;
     /// assert!(view.remaining_slice().is_empty());
     /// ```
     #[inline]
@@ -59,8 +59,9 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// ```
     #[inline]
     pub fn read<E: Endian>(&mut self) -> Option<E> {
-        self.read_slice(E::SIZE)
-            .map(|bytes| unsafe { num_from(bytes.as_ptr()) })
+        todo!()
+        // self.read_slice(E::SIZE)
+        //     .map(|bytes| unsafe { num_from(bytes.as_ptr()) })
     }
 
     /// Reads a value of type `E: Endian` from the DataView, without doing bounds checking.
@@ -73,7 +74,8 @@ impl<T: AsRef<[u8]>> DataView<T> {
     /// Calling this method with an out-of-bounds index is *[undefined behavior]*
     #[inline]
     pub unsafe fn read_unchecked<E: Endian>(&mut self) -> E {
-        num_from(self.read_slice_unchecked(E::SIZE).as_ptr())
+        todo!()
+        // num_from(self.read_slice_unchecked(E::SIZE).as_ptr())
     }
 
     /// Read slice from the current offset.
@@ -174,11 +176,12 @@ impl<T: AsMut<[u8]>> DataView<T> {
     /// Panics if the offset is out of bounds.
     #[inline]
     pub fn write<E: Endian>(&mut self, num: E) {
-        let dst = self.data.as_mut();
-        let total_len = self.offset + E::SIZE;
-        assert!(total_len <= dst.len());
-        unsafe { num_write_at(num, dst.as_mut_ptr().add(self.offset)) };
-        self.offset = total_len;
+        todo!()
+        // let dst = self.data.as_mut();
+        // let total_len = self.offset + E::SIZE;
+        // assert!(total_len <= dst.len());
+        // unsafe { num_write_at(num, dst.as_mut_ptr().add(self.offset)) };
+        // self.offset = total_len;
     }
 
     /// Writes a slice into the data view.
