@@ -63,7 +63,7 @@ impl<T: AsRef<[u8]>> DataView<T> {
         if total_len > data.len() {
             return None;
         }
-        let num = unsafe { num_from(data.as_ptr().add(self.offset)) };
+        let num = unsafe { E::__read_at__(data.as_ptr().add(self.offset)) };
         self.offset = total_len;
         Some(num)
     }
@@ -113,8 +113,6 @@ impl<T: AsRef<[u8]>> DataView<T> {
 }
 
 impl<T: AsMut<[u8]>> DataView<T> {
-    /// Writes a value of type `E` to the data view. where `E` is a type that implements `Endian`.
-    ///
     /// # Examples
     ///
     /// ```
@@ -132,7 +130,7 @@ impl<T: AsMut<[u8]>> DataView<T> {
         if total_len > data.len() {
             return Err(());
         }
-        unsafe { num_write_at(num, data.as_mut_ptr().add(self.offset)) };
+        unsafe { E::__write_at__(num, data.as_mut_ptr().add(self.offset)) };
         self.offset = total_len;
         Ok(())
     }
@@ -171,18 +169,5 @@ impl<T> From<T> for DataView<T> {
     #[inline]
     fn from(data: T) -> Self {
         Self::new(data)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_name() {
-        let mut view = DataView::new([1, 2, 3]);
-
-        assert_eq!(view.read_buf(), Some([1, 2]));
-        assert_eq!(view.read_buf::<3>(), None);
     }
 }

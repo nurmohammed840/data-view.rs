@@ -48,7 +48,7 @@ impl View for [u8] {
         if offset + size_of::<E>() > self.len() {
             return None;
         }
-        Some(unsafe { num_from(self.as_ptr().add(offset)) })
+        Some(unsafe { E::__read_at__(self.as_ptr().add(offset)) })
     }
 
     #[inline]
@@ -56,7 +56,7 @@ impl View for [u8] {
         if offset + size_of::<E>() > self.len() {
             return Err(());
         }
-        unsafe { num_write_at(num, self.as_mut_ptr().add(offset)) };
+        unsafe { E::__write_at__(num, self.as_mut_ptr().add(offset)) };
         Ok(())
     }
 }
